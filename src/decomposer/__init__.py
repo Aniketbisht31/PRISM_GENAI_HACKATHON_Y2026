@@ -1,0 +1,1 @@
+from src.decomposer.decomposer import MultiIntentDecomposer

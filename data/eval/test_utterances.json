@@ -1,0 +1,824 @@
+[
+  {
+    "id": "T01",
+    "category": "simple",
+    "utterance": "What is the seating capacity of Venue B?",
+    "expected_sub_intent_count": 1,
+    "expected_retrieval": true,
+    "notes": "Single clear factual question, should not be decomposed."
+  },
+  {
+    "id": "T02",
+    "category": "simple",
+    "utterance": "Does Venue A allow external catering?",
+    "expected_sub_intent_count": 1,
+    "expected_retrieval": true,
+    "notes": "Single fact lookup."
+  },
+  {
+    "id": "T03",
+    "category": "compound",
+    "utterance": "I need to plan a customer workshop in Pune for 30 people, and I need the cancellation policy and the catering options.",
+    "expected_sub_intent_count": 3,
+    "expected_retrieval": true,
+    "notes": "The guide's own canonical example. Should decompose into: venue capacity for 30, cancellation policy, catering options."
+  },
+  {
+    "id": "T04",
+    "category": "compound",
+    "utterance": "What's the parking situation and do they offer technical support on-site?",
+    "expected_sub_intent_count": 2,
+    "expected_retrieval": true,
+    "notes": "Two distinct sub-questions: parking, technical support."
+  },
+  {
+    "id": "T05",
+    "category": "compound",
+    "utterance": "Can you tell me about booking requirements, refund timelines, and whether they help with visas for international attendees?",
+    "expected_sub_intent_count": 3,
+    "expected_retrieval": true,
+    "notes": "Three distinct sub-intents to test upper-bound decomposition without over-fragmenting."
+  },
+  {
+    "id": "T06",
+    "category": "compound",
+    "utterance": "Which venue is bigger and cheaper, and can I get a corporate discount?",
+    "expected_sub_intent_count": 2,
+    "expected_retrieval": true,
+    "notes": "Comparison question plus a discount question; venue comparison itself should stay as one sub-query, not split per venue."
+  },
+  {
+    "id": "T07",
+    "category": "late_constraint",
+    "utterance_sequence": [
+      "Summarize the cancellation policy for a workshop booking.",
+      "Actually, the workshop has international attendees and needs visa support."
+    ],
+    "expected_sub_intent_count": 1,
+    "expected_behavior": "refine_not_restart",
+    "notes": "Second utterance should trigger a targeted delta query on visa/international attendee support, preserving the first answer's cancellation policy citations."
+  },
+  {
+    "id": "T08",
+    "category": "late_constraint",
+    "utterance_sequence": [
+      "What catering package would you recommend for a 40-person workshop?",
+      "Actually, we also need external catering, not their in-house option."
+    ],
+    "expected_sub_intent_count": 1,
+    "expected_behavior": "refine_not_restart",
+    "notes": "Late detail should narrow prior answer to which venue permits external catering, without re-fetching capacity info already answered."
+  },
+  {
+    "id": "T09",
+    "category": "presentation_only",
+    "utterance_sequence": [
+      "What is included in the standard catering package?",
+      "Can you repeat that in two bullet points?"
+    ],
+    "expected_sub_intent_count": 0,
+    "expected_behavior": "no_new_retrieval",
+    "notes": "Second turn is pure reformatting; must trigger zero new retrieval events per the guide's Example 3."
+  },
+  {
+    "id": "T10",
+    "category": "presentation_only",
+    "utterance_sequence": [
+      "Tell me about parking availability at both venues.",
+      "Make that shorter please."
+    ],
+    "expected_sub_intent_count": 0,
+    "expected_behavior": "no_new_retrieval",
+    "notes": "Shortening request, no new facts needed."
+  },
+  {
+    "id": "T11",
+    "category": "no_retrieval_needed",
+    "utterance": "Thanks, that's helpful.",
+    "expected_sub_intent_count": 0,
+    "expected_retrieval": false,
+    "notes": "Conversational closing remark, controller should classify NO_RETRIEVAL, not WAIT or RETRIEVE."
+  },
+  {
+    "id": "T12",
+    "category": "wait_then_retrieve",
+    "chunk_sequence": [
+      {
+        "text": "I need to plan a customer workshop in...",
+        "timestamp_s": 0.0,
+        "expected_decision": "WAIT"
+      },
+      {
+        "text": "...Pune for 30 people, and I need...",
+        "timestamp_s": 0.8,
+        "expected_decision": "RETRIEVE"
+      },
+      {
+        "text": "...the cancellation policy and the catering options.",
+        "timestamp_s": 1.6,
+        "expected_decision": "RETRIEVE"
+      }
+    ],
+    "notes": "Tests incremental streaming controller behavior exactly per the guide's worked example, for the G2 early-retrieval gate."
+  },
+  {
+    "id": "T13",
+    "category": "uncertainty_check",
+    "utterance": "Does Venue A offer live music performance licensing for the workshop?",
+    "expected_sub_intent_count": 1,
+    "expected_retrieval": true,
+    "expected_uncertainty": true,
+    "notes": "Not covered anywhere in the corpus. System must emit an explicit uncertainty flag rather than fabricate an answer. Tests G4 (zero hallucination)."
+  },
+  {
+    "id": "T14",
+    "category": "compound",
+    "utterance": "What's the difference in cancellation terms between the two venues and how long do refunds take to process?",
+    "expected_sub_intent_count": 2,
+    "expected_retrieval": true,
+    "notes": "Cancellation comparison + refund timeline as two sub-intents."
+  },
+  {
+    "id": "T15",
+    "category": "simple",
+    "utterance": "How many vehicles can park at Venue A?",
+    "expected_sub_intent_count": 1,
+    "expected_retrieval": true,
+    "notes": "Direct factual lookup, single sub-query expected."
+  },
+  {
+    "id": "T16",
+    "category": "compound",
+    "utterance": "I want to know about AV equipment, whether it's wheelchair accessible, and the group workshop layout recommendations.",
+    "expected_sub_intent_count": 3,
+    "expected_retrieval": true,
+    "notes": "Three distinct facts bundled into one utterance, tests decomposition without merging distinct topics."
+  },
+  {
+    "id": "T17",
+    "category": "late_constraint",
+    "utterance_sequence": [
+      "What's the base rental cost for a workshop at Venue B?",
+      "Actually we'd need it during monsoon season, does that change anything?"
+    ],
+    "expected_sub_intent_count": 1,
+    "expected_behavior": "refine_not_restart",
+    "notes": "Tests refinement pulling in seasonal/weather considerations without discarding the rental cost already retrieved."
+  },
+  {
+    "id": "T18",
+    "category": "presentation_only",
+    "utterance_sequence": [
+      "Explain the corporate discount program.",
+      "Translate your last answer into simpler language."
+    ],
+    "expected_sub_intent_count": 0,
+    "expected_behavior": "no_new_retrieval",
+    "notes": "Restructuring/simplification request, no new corpus query needed."
+  },
+  {
+    "id": "T19",
+    "category": "compound",
+    "utterance": "What is Venue B workshop capacity and its base rental cost?",
+    "expected_sub_intent_count": 2,
+    "expected_retrieval": true,
+    "notes": "Held-out two-intent decomposition case."
+  },
+  {
+    "id": "T20",
+    "category": "compound",
+    "utterance": "Does Venue A permit outside catering and what is its parking capacity?",
+    "expected_sub_intent_count": 2,
+    "expected_retrieval": true,
+    "notes": "Held-out two-intent decomposition case."
+  },
+  {
+    "id": "T21",
+    "category": "compound",
+    "utterance": "What does the premium catering package include and what is its per-person price?",
+    "expected_sub_intent_count": 2,
+    "expected_retrieval": true,
+    "notes": "Held-out two-intent decomposition case."
+  },
+  {
+    "id": "T22",
+    "category": "compound",
+    "utterance": "Compare Venue B cancellation terms and refund processing time.",
+    "expected_sub_intent_count": 2,
+    "expected_retrieval": true,
+    "notes": "Held-out two-intent decomposition case."
+  },
+  {
+    "id": "T23",
+    "category": "compound",
+    "utterance": "Is Venue B wheelchair accessible and how many vehicles can park there?",
+    "expected_sub_intent_count": 2,
+    "expected_retrieval": true,
+    "notes": "Held-out two-intent decomposition case."
+  },
+  {
+    "id": "T24",
+    "category": "compound",
+    "utterance": "Which AV equipment is available and is on-site technical support included?",
+    "expected_sub_intent_count": 2,
+    "expected_retrieval": true,
+    "notes": "Held-out two-intent decomposition case."
+  },
+  {
+    "id": "T25",
+    "category": "compound",
+    "utterance": "How early must Venue B be booked and what is its cancellation deadline?",
+    "expected_sub_intent_count": 2,
+    "expected_retrieval": true,
+    "notes": "Held-out two-intent decomposition case."
+  },
+  {
+    "id": "T26",
+    "category": "compound",
+    "utterance": "What corporate discounts are available and what booking steps are required?",
+    "expected_sub_intent_count": 2,
+    "expected_retrieval": true,
+    "notes": "Held-out two-intent decomposition case."
+  },
+  {
+    "id": "T27",
+    "category": "compound",
+    "utterance": "How many people fit in Venue A workshop-style and what is its daily rent?",
+    "expected_sub_intent_count": 2,
+    "expected_retrieval": true,
+    "notes": "Held-out two-intent decomposition case."
+  },
+  {
+    "id": "T28",
+    "category": "compound",
+    "utterance": "What are the premium package dietary rules and its price?",
+    "expected_sub_intent_count": 2,
+    "expected_retrieval": true,
+    "notes": "Held-out two-intent decomposition case."
+  },
+  {
+    "id": "T29",
+    "category": "compound",
+    "utterance": "What external catering rules apply and what is the standard meal package?",
+    "expected_sub_intent_count": 2,
+    "expected_retrieval": true,
+    "notes": "Held-out two-intent decomposition case."
+  },
+  {
+    "id": "T30",
+    "category": "compound",
+    "utterance": "What is Venue A cancellation window and when are refunds processed?",
+    "expected_sub_intent_count": 2,
+    "expected_retrieval": true,
+    "notes": "Held-out two-intent decomposition case."
+  },
+  {
+    "id": "T31",
+    "category": "compound",
+    "utterance": "What group layout is recommended and what is the maximum workshop capacity?",
+    "expected_sub_intent_count": 2,
+    "expected_retrieval": true,
+    "notes": "Held-out two-intent decomposition case."
+  },
+  {
+    "id": "T32",
+    "category": "compound",
+    "utterance": "What international attendee support is listed and how far ahead should bookings be made?",
+    "expected_sub_intent_count": 2,
+    "expected_retrieval": true,
+    "notes": "Held-out two-intent decomposition case."
+  },
+  {
+    "id": "T33",
+    "category": "simple",
+    "utterance": "What is Venue A's daily rental cost?",
+    "expected_sub_intent_count": 1,
+    "expected_retrieval": true,
+    "notes": "Held-out single-fact grounding and over-fragmentation case."
+  },
+  {
+    "id": "T34",
+    "category": "simple",
+    "utterance": "How much does the premium catering package cost per person?",
+    "expected_sub_intent_count": 1,
+    "expected_retrieval": true,
+    "notes": "Held-out single-fact grounding and over-fragmentation case."
+  },
+  {
+    "id": "T35",
+    "category": "simple",
+    "utterance": "How many days before the event can Venue B be cancelled for a full refund?",
+    "expected_sub_intent_count": 1,
+    "expected_retrieval": true,
+    "notes": "Held-out single-fact grounding and over-fragmentation case."
+  },
+  {
+    "id": "T36",
+    "category": "simple",
+    "utterance": "What advance notice is needed for dietary restrictions?",
+    "expected_sub_intent_count": 1,
+    "expected_retrieval": true,
+    "notes": "Held-out single-fact grounding and over-fragmentation case."
+  },
+  {
+    "id": "T37",
+    "category": "simple",
+    "utterance": "When is Pune monsoon season?",
+    "expected_sub_intent_count": 1,
+    "expected_retrieval": true,
+    "notes": "Held-out single-fact grounding and over-fragmentation case."
+  },
+  {
+    "id": "T38",
+    "category": "simple",
+    "utterance": "How many round tables can Venue B use in the workshop layout?",
+    "expected_sub_intent_count": 1,
+    "expected_retrieval": true,
+    "notes": "Held-out single-fact grounding and over-fragmentation case."
+  },
+  {
+    "id": "T39",
+    "category": "simple",
+    "utterance": "What is the maximum capacity of Venue A in theatre style?",
+    "expected_sub_intent_count": 1,
+    "expected_retrieval": true,
+    "notes": "Held-out single-fact grounding and over-fragmentation case."
+  },
+  {
+    "id": "T40",
+    "category": "wait_then_retrieve",
+    "chunk_sequence": [
+      {
+        "text": "I need",
+        "timestamp_s": 0.0,
+        "expected_decision": "WAIT"
+      },
+      {
+        "text": " to know the seating capacity of Venue B.",
+        "timestamp_s": 0.8,
+        "expected_decision": "RETRIEVE"
+      }
+    ],
+    "notes": "Independent two-chunk early-retrieval and false-trigger case."
+  },
+  {
+    "id": "T41",
+    "category": "wait_then_retrieve",
+    "chunk_sequence": [
+      {
+        "text": "Tell me",
+        "timestamp_s": 0.0,
+        "expected_decision": "WAIT"
+      },
+      {
+        "text": " the cancellation policy at Venue A.",
+        "timestamp_s": 0.8,
+        "expected_decision": "RETRIEVE"
+      }
+    ],
+    "notes": "Independent two-chunk early-retrieval and false-trigger case."
+  },
+  {
+    "id": "T42",
+    "category": "wait_then_retrieve",
+    "chunk_sequence": [
+      {
+        "text": "Can you",
+        "timestamp_s": 0.0,
+        "expected_decision": "WAIT"
+      },
+      {
+        "text": " tell me if Venue B allows outside catering?",
+        "timestamp_s": 0.8,
+        "expected_decision": "RETRIEVE"
+      }
+    ],
+    "notes": "Independent two-chunk early-retrieval and false-trigger case."
+  },
+  {
+    "id": "T43",
+    "category": "wait_then_retrieve",
+    "chunk_sequence": [
+      {
+        "text": "What is",
+        "timestamp_s": 0.0,
+        "expected_decision": "WAIT"
+      },
+      {
+        "text": " the standard catering package price per person?",
+        "timestamp_s": 0.8,
+        "expected_decision": "RETRIEVE"
+      }
+    ],
+    "notes": "Independent two-chunk early-retrieval and false-trigger case."
+  },
+  {
+    "id": "T44",
+    "category": "wait_then_retrieve",
+    "chunk_sequence": [
+      {
+        "text": "I want",
+        "timestamp_s": 0.0,
+        "expected_decision": "WAIT"
+      },
+      {
+        "text": " to know the refund processing time.",
+        "timestamp_s": 0.8,
+        "expected_decision": "RETRIEVE"
+      }
+    ],
+    "notes": "Independent two-chunk early-retrieval and false-trigger case."
+  },
+  {
+    "id": "T45",
+    "category": "wait_then_retrieve",
+    "chunk_sequence": [
+      {
+        "text": "Please explain",
+        "timestamp_s": 0.0,
+        "expected_decision": "WAIT"
+      },
+      {
+        "text": " Venue A parking availability.",
+        "timestamp_s": 0.8,
+        "expected_decision": "RETRIEVE"
+      }
+    ],
+    "notes": "Independent two-chunk early-retrieval and false-trigger case."
+  },
+  {
+    "id": "T46",
+    "category": "wait_then_retrieve",
+    "chunk_sequence": [
+      {
+        "text": "I need to plan",
+        "timestamp_s": 0.0,
+        "expected_decision": "WAIT"
+      },
+      {
+        "text": " a 30-person workshop in Pune.",
+        "timestamp_s": 0.8,
+        "expected_decision": "RETRIEVE"
+      }
+    ],
+    "notes": "Independent two-chunk early-retrieval and false-trigger case."
+  },
+  {
+    "id": "T47",
+    "category": "wait_then_retrieve",
+    "chunk_sequence": [
+      {
+        "text": "Could you tell",
+        "timestamp_s": 0.0,
+        "expected_decision": "WAIT"
+      },
+      {
+        "text": " me the booking lead time for Venue B?",
+        "timestamp_s": 0.8,
+        "expected_decision": "RETRIEVE"
+      }
+    ],
+    "notes": "Independent two-chunk early-retrieval and false-trigger case."
+  },
+  {
+    "id": "T48",
+    "category": "wait_then_retrieve",
+    "chunk_sequence": [
+      {
+        "text": "How many",
+        "timestamp_s": 0.0,
+        "expected_decision": "WAIT"
+      },
+      {
+        "text": " vehicles can park at Venue A?",
+        "timestamp_s": 0.8,
+        "expected_decision": "RETRIEVE"
+      }
+    ],
+    "notes": "Independent two-chunk early-retrieval and false-trigger case."
+  },
+  {
+    "id": "T49",
+    "category": "wait_then_retrieve",
+    "chunk_sequence": [
+      {
+        "text": "Tell me about",
+        "timestamp_s": 0.0,
+        "expected_decision": "WAIT"
+      },
+      {
+        "text": " wheelchair accessibility at both venues.",
+        "timestamp_s": 0.8,
+        "expected_decision": "RETRIEVE"
+      }
+    ],
+    "notes": "Independent two-chunk early-retrieval and false-trigger case."
+  },
+  {
+    "id": "T50",
+    "category": "wait_then_retrieve",
+    "chunk_sequence": [
+      {
+        "text": "I need to know",
+        "timestamp_s": 0.0,
+        "expected_decision": "WAIT"
+      },
+      {
+        "text": " whether technical support is available on-site.",
+        "timestamp_s": 0.8,
+        "expected_decision": "RETRIEVE"
+      }
+    ],
+    "notes": "Independent two-chunk early-retrieval and false-trigger case."
+  },
+  {
+    "id": "T51",
+    "category": "wait_then_retrieve",
+    "chunk_sequence": [
+      {
+        "text": "What are",
+        "timestamp_s": 0.0,
+        "expected_decision": "WAIT"
+      },
+      {
+        "text": " the premium catering options?",
+        "timestamp_s": 0.8,
+        "expected_decision": "RETRIEVE"
+      }
+    ],
+    "notes": "Independent two-chunk early-retrieval and false-trigger case."
+  },
+  {
+    "id": "T52",
+    "category": "wait_then_retrieve",
+    "chunk_sequence": [
+      {
+        "text": "Can you explain",
+        "timestamp_s": 0.0,
+        "expected_decision": "WAIT"
+      },
+      {
+        "text": " Venue B cancellation and refund terms?",
+        "timestamp_s": 0.8,
+        "expected_decision": "RETRIEVE"
+      }
+    ],
+    "notes": "Independent two-chunk early-retrieval and false-trigger case."
+  },
+  {
+    "id": "T53",
+    "category": "wait_then_retrieve",
+    "chunk_sequence": [
+      {
+        "text": "I am checking",
+        "timestamp_s": 0.0,
+        "expected_decision": "WAIT"
+      },
+      {
+        "text": " the group workshop layout recommendations.",
+        "timestamp_s": 0.8,
+        "expected_decision": "RETRIEVE"
+      }
+    ],
+    "notes": "Independent two-chunk early-retrieval and false-trigger case."
+  },
+  {
+    "id": "T54",
+    "category": "wait_then_retrieve",
+    "chunk_sequence": [
+      {
+        "text": "Tell me",
+        "timestamp_s": 0.0,
+        "expected_decision": "WAIT"
+      },
+      {
+        "text": " the corporate discount rules.",
+        "timestamp_s": 0.8,
+        "expected_decision": "RETRIEVE"
+      }
+    ],
+    "notes": "Independent two-chunk early-retrieval and false-trigger case."
+  },
+  {
+    "id": "T55",
+    "category": "wait_then_retrieve",
+    "chunk_sequence": [
+      {
+        "text": "I want to know",
+        "timestamp_s": 0.0,
+        "expected_decision": "WAIT"
+      },
+      {
+        "text": " about support for international attendees.",
+        "timestamp_s": 0.8,
+        "expected_decision": "RETRIEVE"
+      }
+    ],
+    "notes": "Independent two-chunk early-retrieval and false-trigger case."
+  },
+  {
+    "id": "T56",
+    "category": "wait_then_retrieve",
+    "chunk_sequence": [
+      {
+        "text": "What is",
+        "timestamp_s": 0.0,
+        "expected_decision": "WAIT"
+      },
+      {
+        "text": " the recommended booking process for Venue A?",
+        "timestamp_s": 0.8,
+        "expected_decision": "RETRIEVE"
+      }
+    ],
+    "notes": "Independent two-chunk early-retrieval and false-trigger case."
+  },
+  {
+    "id": "T57",
+    "category": "wait_then_retrieve",
+    "chunk_sequence": [
+      {
+        "text": "Please tell me",
+        "timestamp_s": 0.0,
+        "expected_decision": "WAIT"
+      },
+      {
+        "text": " when Pune gets heavy monsoon rainfall.",
+        "timestamp_s": 0.8,
+        "expected_decision": "RETRIEVE"
+      }
+    ],
+    "notes": "Independent two-chunk early-retrieval and false-trigger case."
+  },
+  {
+    "id": "T58",
+    "category": "wait_then_retrieve",
+    "chunk_sequence": [
+      {
+        "text": "I need",
+        "timestamp_s": 0.0,
+        "expected_decision": "WAIT"
+      },
+      {
+        "text": " the insurance and liability requirements.",
+        "timestamp_s": 0.8,
+        "expected_decision": "RETRIEVE"
+      }
+    ],
+    "notes": "Independent two-chunk early-retrieval and false-trigger case."
+  },
+  {
+    "id": "T59",
+    "category": "late_constraint",
+    "utterance_sequence": [
+      "What is the standard catering package?",
+      "We need dietary accommodations with only 24 hours notice."
+    ],
+    "expected_sub_intent_count": 1,
+    "expected_behavior": "refine_not_restart",
+    "notes": "Held-out delta-only refinement case."
+  },
+  {
+    "id": "T60",
+    "category": "late_constraint",
+    "utterance_sequence": [
+      "What is Venue B workshop capacity?",
+      "The group is 55 people."
+    ],
+    "expected_sub_intent_count": 1,
+    "expected_behavior": "refine_not_restart",
+    "notes": "Held-out delta-only refinement case."
+  },
+  {
+    "id": "T61",
+    "category": "late_constraint",
+    "utterance_sequence": [
+      "What does Venue A charge per day?",
+      "The event will use a boardroom layout."
+    ],
+    "expected_sub_intent_count": 1,
+    "expected_behavior": "refine_not_restart",
+    "notes": "Held-out delta-only refinement case."
+  },
+  {
+    "id": "T62",
+    "category": "late_constraint",
+    "utterance_sequence": [
+      "How does Venue B cancellation work?",
+      "The event is 6 days away."
+    ],
+    "expected_sub_intent_count": 1,
+    "expected_behavior": "refine_not_restart",
+    "notes": "Held-out delta-only refinement case."
+  },
+  {
+    "id": "T63",
+    "category": "late_constraint",
+    "utterance_sequence": [
+      "What booking steps are required for Venue A?",
+      "The booking is being made fewer than 10 days ahead."
+    ],
+    "expected_sub_intent_count": 1,
+    "expected_behavior": "refine_not_restart",
+    "notes": "Held-out delta-only refinement case."
+  },
+  {
+    "id": "T64",
+    "category": "late_constraint",
+    "utterance_sequence": [
+      "What parking is available at Venue B?",
+      "Some attendees need wheelchair accessible parking."
+    ],
+    "expected_sub_intent_count": 1,
+    "expected_behavior": "refine_not_restart",
+    "notes": "Held-out delta-only refinement case."
+  },
+  {
+    "id": "T65",
+    "category": "late_constraint",
+    "utterance_sequence": [
+      "What does the premium package include?",
+      "We need the vegetarian and non-vegetarian main counts."
+    ],
+    "expected_sub_intent_count": 1,
+    "expected_behavior": "refine_not_restart",
+    "notes": "Held-out delta-only refinement case."
+  },
+  {
+    "id": "T66",
+    "category": "presentation_only",
+    "utterance_sequence": [
+      "What is Venue B workshop capacity?",
+      "Please repeat that in two bullets."
+    ],
+    "expected_sub_intent_count": 0,
+    "expected_behavior": "no_new_retrieval",
+    "notes": "Held-out no-retrieval presentation case."
+  },
+  {
+    "id": "T67",
+    "category": "presentation_only",
+    "utterance_sequence": [
+      "What is in the standard catering package?",
+      "Shorten that answer."
+    ],
+    "expected_sub_intent_count": 0,
+    "expected_behavior": "no_new_retrieval",
+    "notes": "Held-out no-retrieval presentation case."
+  },
+  {
+    "id": "T68",
+    "category": "presentation_only",
+    "utterance_sequence": [
+      "What does Venue A cancellation cover?",
+      "Translate that to Hindi."
+    ],
+    "expected_sub_intent_count": 0,
+    "expected_behavior": "no_new_retrieval",
+    "notes": "Held-out no-retrieval presentation case."
+  },
+  {
+    "id": "T69",
+    "category": "presentation_only",
+    "utterance_sequence": [
+      "How much does Venue B cost?",
+      "Make the answer formal."
+    ],
+    "expected_sub_intent_count": 0,
+    "expected_behavior": "no_new_retrieval",
+    "notes": "Held-out no-retrieval presentation case."
+  },
+  {
+    "id": "T70",
+    "category": "presentation_only",
+    "utterance_sequence": [
+      "What parking does Venue A offer?",
+      "Put that in a table."
+    ],
+    "expected_sub_intent_count": 0,
+    "expected_behavior": "no_new_retrieval",
+    "notes": "Held-out no-retrieval presentation case."
+  },
+  {
+    "id": "T71",
+    "category": "presentation_only",
+    "utterance_sequence": [
+      "What booking steps are needed?",
+      "Rephrase your last answer."
+    ],
+    "expected_sub_intent_count": 0,
+    "expected_behavior": "no_new_retrieval",
+    "notes": "Held-out no-retrieval presentation case."
+  },
+  {
+    "id": "T72",
+    "category": "presentation_only",
+    "utterance_sequence": [
+      "What does the premium package include?",
+      "Make that simpler."
+    ],
+    "expected_sub_intent_count": 0,
+    "expected_behavior": "no_new_retrieval",
+    "notes": "Held-out no-retrieval presentation case."
+  }
+]

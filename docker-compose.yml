@@ -1,0 +1,29 @@
+services:
+  streaming-rag:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - LLM_BACKEND=${LLM_BACKEND:-ollama}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - GROQ_MODEL=${GROQ_MODEL:-openai/gpt-oss-20b}
+      - OLLAMA_HOST=${OLLAMA_DOCKER_HOST:-http://host.docker.internal:11434}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-gemma4:26b}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-all-MiniLM-L6-v2}
+      - CHROMA_PERSIST_DIR=/app/data/chroma_index
+      - TELEMETRY_LOG_PATH=/var/log/rag/telemetry.jsonl
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+    volumes:
+      - telemetry_data:/var/log/rag
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  telemetry_data:

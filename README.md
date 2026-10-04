@@ -3,6 +3,7 @@
 Streaming Live RAG is a retrieval-augmented question-answering service for the bundled workshop-planning corpus. It accepts complete questions over HTTP or transcript fragments over WebSocket, decides when enough intent is available to search, splits compound requests into subqueries, and grounds answers in retrieved corpus passages.
 
 The system includes a retrieval controller, multi-intent decomposer, hybrid dense/sparse retriever, session-aware synthesizer, and structured telemetry. It supports late-detail refinement and presentation-only requests that reuse an existing answer without searching again. PRISM_GENAI_HACKATHON_Y2026.DEMO(https://drive.google.com/file/d/1RryWacdLqB5szCqar0apQAq6f_hGNlxm/view?usp=sharing)
+
 SRMIST_BigLeagues_Submission (https://docs.google.com/presentation/d/1MIY9fILpV61CoCzil3PvVgkSFv9kSkYM/edit?)usp=sharing&ouid=115566261664605086512&rtpof=true&sd=true
 
 LangAI3.0_AI_Disclosure (https://docs.google.com/document/d/1OxccAtrQ1hIc_I10Sl6E60yFOj3vr13l/edit?usp=sharing&ouid=113087960945501739888&rtpof=true&sd=true

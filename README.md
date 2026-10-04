@@ -400,6 +400,6 @@ docs/                      Architecture, evaluation, telemetry, demo storyboard
 - Exact quotation checks favor precision over paraphrase flexibility and do not prove semantic entailment beyond the quoted text.
 - Corpus and evaluation fixtures focus on workshop planning; their results do not generalize to other domains.
 - The live gate runner does not mark G1 passed by itself; a clean Docker build and replay are required.
-- The repository has a demo storyboard, not a recorded video. See [docs/demo_storyboard.md](docs/demo_storyboard.md).
+
 
 For design and measurement details, see [the architecture brief](docs/architecture_brief.md) and [the benchmarking report](docs/benchmarking_report.md).
